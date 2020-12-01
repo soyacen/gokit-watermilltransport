@@ -1,4 +1,4 @@
-package watermilltransport
+package examples
 
 import (
 	"context"
@@ -13,6 +13,7 @@ import (
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/go-kit/kit/endpoint"
+	"../watermilltransport"
 )
 
 func ExampleSubscriber() {
@@ -66,19 +67,19 @@ func newKafkaSubscriber(consumerGroup string, brokers []string) (*kafka.Subscrib
 func TestNewSubscriber(t *testing.T) {
 	brokers := []string{"10.18.1.77:9092", "10.18.1.78:9092", "10.18.1.79:9092"}
 	watermillKafka, _ := newKafkaSubscriber("testuser1", brokers)
-	handler := NewSubscriber(
+	handler := watermilltransport.NewSubscriber(
 		makeEndpoint(&basicService{}),
 		ExampleSubscriberDecodeRequestFunc,
 		ExampleSubscriberEncodeResponseFunc,
-		WithSubscriberBefore(func(ctx context.Context, msg *message.Message) context.Context {
+		watermilltransport.WithSubscriberBefore(func(ctx context.Context, msg *message.Message) context.Context {
 			fmt.Println("before func")
 			return ctx
 		}),
-		WithSubscriberAfter(func(ctx context.Context, msg *message.Message) context.Context {
+		watermilltransport.WithSubscriberAfter(func(ctx context.Context, msg *message.Message) context.Context {
 			fmt.Println("after func")
 			return ctx
 		}),
-		WithSubscriberErrorEncoder(func(ctx context.Context, msg *message.Message, err error) {
+		watermilltransport.WithSubscriberErrorEncoder(func(ctx context.Context, msg *message.Message, err error) {
 			fmt.Println("error encoder", err)
 		}),
 	)

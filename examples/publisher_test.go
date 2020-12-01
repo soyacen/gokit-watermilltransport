@@ -1,4 +1,4 @@
-package watermilltransport
+package examples
 
 import (
 	 "testing"
@@ -9,6 +9,7 @@ import (
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/ThreeDotsLabs/watermill/message"
+	"../watermilltransport"
 )
 
 func createPublisher(brokers []string) (message.Publisher, error) {
@@ -50,14 +51,14 @@ func PublisherAfter(ctx context.Context, msg *message.Message, err error) contex
 func TestPublihser(t *testing.T) {
 	brokers := []string{"10.18.1.77:9092", "10.18.1.78:9092", "10.18.1.79:9092"}
 	producer, _ := createPublisher(brokers)
-	publihser := NewPublisher(
+	publihser := watermilltransport.NewPublisher(
 		producer,
 		"user",
-		JSONEncodeRequestFunc,
+		watermilltransport.JSONEncodeRequestFunc,
 		ExampleDecodeResponseFuncfunc,
-		WithPublisherBefore(PublisherBefore),
-		WithPublisherAfter(PublisherAfter),
-		WithPublisherTimeout(time.Second),
+		watermilltransport.WithPublisherBefore(PublisherBefore),
+		watermilltransport.WithPublisherAfter(PublisherAfter),
+		watermilltransport.WithPublisherTimeout(time.Second),
 	).Endpoint()
 	for i := 0; i < 100; i++ {
 		resp, err := publihser(context.Background(), User{Name: "jax", Age: i})
