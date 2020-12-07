@@ -12,8 +12,8 @@ import (
 
 type (
 	SubscriberOption             func(s *Subscriber)
-	SubscriberDecodeRequestFunc  func(ctx context.Context, msg *message.Message) (request interface{}, err error)
-	SubscriberEncodeResponseFunc func(ctx context.Context, ack *bool, resp interface{}) error
+	SubscriberDecodeIncomingFunc func(ctx context.Context, msg *message.Message) (request interface{}, err error)
+	SubscriberEncodeOutgoingFunc func(ctx context.Context, ack *bool, resp interface{}) error
 	SubscriberBeforeFunc         func(ctx context.Context, msg *message.Message) context.Context
 	SubscriberAfterFunc          func(ctx context.Context, msg *message.Message) context.Context
 	SubscriberAcknowledger       func(ctx context.Context, msg *message.Message, ack bool) bool
@@ -22,8 +22,8 @@ type (
 
 type Subscriber struct {
 	e            endpoint.Endpoint
-	dec          SubscriberDecodeRequestFunc
-	enc          SubscriberEncodeResponseFunc
+	dec          SubscriberDecodeIncomingFunc
+	enc          SubscriberEncodeOutgoingFunc
 	before       []SubscriberBeforeFunc
 	after        []SubscriberAfterFunc
 	acknowledger SubscriberAcknowledger
@@ -33,16 +33,16 @@ type Subscriber struct {
 
 func NewSubscriber(
 	endpoint endpoint.Endpoint,
-	dec SubscriberDecodeRequestFunc,
-	enc SubscriberEncodeResponseFunc,
+	dec SubscriberDecodeIncomingFunc,
+	enc SubscriberEncodeOutgoingFunc,
 	options ...SubscriberOption) *Subscriber {
 	consumer := &Subscriber{
 		e:            endpoint,
 		dec:          dec,
 		enc:          enc,
-		acknowledger: DefaultAcknowledger,
+		acknowledger: SubscriberDefaultAcknowledger,
 		errorHandler: transport.NewLogErrorHandler(log.NewNopLogger()),
-		errorEncoder: DefaultErrorEncoder,
+		errorEncoder: SubscriberDefaultErrorEncoder,
 	}
 	for _, option := range options {
 		option(consumer)
@@ -113,13 +113,13 @@ func (s *Subscriber) handleMsg(msg *message.Message) {
 	}
 }
 
-func DefaultAcknowledger(ctx context.Context, msg *message.Message, ack bool) bool {
+func SubscriberDefaultAcknowledger(ctx context.Context, msg *message.Message, ack bool) bool {
 	if ack {
 		return msg.Ack()
 	}
 	return msg.Nack()
 }
 
-func DefaultErrorEncoder(ctx context.Context, msg *message.Message, err error) {
+func SubscriberDefaultErrorEncoder(ctx context.Context, msg *message.Message, err error) {
 
 }

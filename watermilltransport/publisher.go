@@ -11,16 +11,16 @@ import (
 
 type (
 	PublisherOption             func(*Publisher)
-	PublisherEncodeRequestFunc  func(ctx context.Context, msg *message.Message, request interface{}) error
-	PublisherDecodeResponseFunc func(ctx context.Context, msg *message.Message, publishResult error) (response interface{}, err error)
+	PublisherEncodeOutgoingFunc func(ctx context.Context, msg *message.Message, request interface{}) error
+	PublisherDecodeInComingFunc func(ctx context.Context, msg *message.Message, publishResult error) (response interface{}, err error)
 	PublisherBeforeFunc         func(ctx context.Context, msg *message.Message) context.Context
 	PublisherAfterFunc          func(ctx context.Context, msg *message.Message, err error) context.Context
 )
 type Publisher struct {
 	publisher message.Publisher
 	topic     string
-	enc       PublisherEncodeRequestFunc
-	dec       PublisherDecodeResponseFunc
+	enc       PublisherEncodeOutgoingFunc
+	dec       PublisherDecodeInComingFunc
 	before    []PublisherBeforeFunc
 	after     []PublisherAfterFunc
 	timeout   time.Duration
@@ -29,8 +29,8 @@ type Publisher struct {
 func NewPublisher(
 	publisher message.Publisher,
 	topic string,
-	enc PublisherEncodeRequestFunc,
-	dec PublisherDecodeResponseFunc,
+	enc PublisherEncodeOutgoingFunc,
+	dec PublisherDecodeInComingFunc,
 	options ...PublisherOption,
 ) *Publisher {
 	p := &Publisher{
